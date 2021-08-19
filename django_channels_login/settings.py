@@ -68,7 +68,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'django_channels_login.wsgi.application'
+ASGI_APPLICATION = "django_channels_login.asgi.application"
 
 
 # Database
