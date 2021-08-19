@@ -23,6 +23,7 @@
     {% endif %}
 {% endif %}
 
+    <div id="login_form">
 <form method="post" action="{% url 'login' %}">
 {% csrf_token %}
 <table>
@@ -36,11 +37,47 @@
 </tr>
 </table>
 
-<input type="submit" value="login" />
+<input id="login_submit" type="submit" value="login" />
 <input type="hidden" name="next" value="{{ next }}" />
 </form>
 
 {# Assumes you setup the password_reset view in your URLconf #}
 <p><a href="{% url 'password_reset' %}">Lost password?</a></p>
+    </div>
+
+    <div id="login_result">
+    </div>
+
+<script>
+    const chatSocket = new WebSocket(
+        'ws://'
+        + window.location.host
+        + '/ws/user/'
+    );
+
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        if (data.message_type == 'login_result') {
+            document.getElementById('login_result').innerText = 'You are logged in as ' + data.username;
+            document.getElementById('login_form').style.display = 'none';
+        }
+    };
+
+    chatSocket.onclose = function(e) {
+        console.error('Chat socket closed unexpectedly');
+    };
+
+    document.querySelector('#login_submit').onclick = function(e) {
+        e.preventDefault();
+        let messageData = {
+            'message_type': 'login',
+            'data': {
+                'username': document.getElementById('id_username').value,
+                'password': document.getElementById('id_password').value,
+            }
+        }
+        chatSocket.send(JSON.stringify(messageData));
+    };
+</script>
 
 {% endblock %}
