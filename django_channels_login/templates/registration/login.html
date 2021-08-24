@@ -23,7 +23,14 @@
     {% endif %}
 {% endif %}
 
-    <div id="login_form">
+    <div id="logged_in" class="{% if not user.is_authenticated %}hidden{% endif %}">
+    <div id="login_result">
+    You are authenticated as {{ request.user.username }}
+    </div>
+    <a href="{% url 'logout' %}">Log out</a>
+    </div>
+
+    <div id="login_form" class="{% if user.is_authenticated %}hidden{% endif %}">
 <form method="post" action="{% url 'login' %}">
 {% csrf_token %}
 <table>
@@ -43,10 +50,7 @@
 
 {# Assumes you setup the password_reset view in your URLconf #}
 <p><a href="{% url 'password_reset' %}">Lost password?</a></p>
-    </div>
-
-    <div id="login_result">
-    </div>
+</div>
 
 <script>
     const chatSocket = new WebSocket(
@@ -58,8 +62,12 @@
     chatSocket.onmessage = function(e) {
         const data = JSON.parse(e.data);
         if (data.message_type == 'login_result') {
+            document.getElementById('logged_in').classList.remove('hidden');
             document.getElementById('login_result').innerText = 'You are logged in as ' + data.username;
-            document.getElementById('login_form').style.display = 'none';
+            document.getElementById('login_form').classList.add('hidden');
+            document.cookie = "sessionid=" + data.sessionid;
+            console.log(data.sessionid, data.session_cookie)
+            //document.cookie = data.session_cookie;
         }
     };
 
